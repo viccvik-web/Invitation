@@ -1,0 +1,877 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Dearest Inner Circle — A Special Announcement</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- Google Fonts for Editorial Elegance -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,600;1,400;1,600&display=swap" rel="stylesheet">
+  
+  <!-- Canvas Confetti for Celebration on the Final Card -->
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+  <style>
+    :root {
+      --bg-cream: #F8F5EE;
+      --card-border: #9CB7D4;
+      --accent-burgundy: #852638;
+      --accent-rose: #E26D82;
+      --text-dark: #2D3748;
+    }
+
+    body {
+      background-color: var(--bg-cream);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      color: var(--text-dark);
+      overflow-x: hidden;
+      touch-action: pan-y;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+
+    .font-handwriting {
+      font-family: 'Caveat', cursive;
+    }
+
+    .font-serif-display {
+      font-family: 'Playfair Display', serif;
+    }
+
+    /* Ambient paper grain effect */
+    .paper-texture {
+      background-color: #FAF6EE;
+      background-image: radial-gradient(rgba(133, 38, 56, 0.03) 1px, transparent 0);
+      background-size: 24px 24px;
+    }
+
+    /* Carousel 3D perspective and card smoothness */
+    .carousel-container {
+      perspective: 1200px;
+    }
+
+    .slide-card {
+      transition: transform 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+                  opacity 0.65s cubic-bezier(0.22, 1, 0.36, 1),
+                  box-shadow 0.5s ease;
+      transform-style: preserve-3d;
+      will-change: transform, opacity;
+    }
+
+    /* Heart Pop Animation */
+    @keyframes heartBurst {
+      0% {
+        transform: translate(-50%, -50%) scale(0) rotate(-15deg);
+        opacity: 0;
+      }
+      40% {
+        transform: translate(-50%, -50%) scale(1.35) rotate(10deg);
+        opacity: 1;
+      }
+      65% {
+        transform: translate(-50%, -50%) scale(1.1) rotate(-5deg);
+        opacity: 0.95;
+      }
+      100% {
+        transform: translate(-50%, -85%) scale(1.6) rotate(0deg);
+        opacity: 0;
+      }
+    }
+
+    .heart-burst {
+      position: absolute;
+      pointer-events: none;
+      animation: heartBurst 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      z-index: 50;
+      filter: drop-shadow(0 8px 18px rgba(226, 109, 130, 0.5));
+    }
+
+    /* Floating micro heart particle */
+    @keyframes miniHeartFloat {
+      0% {
+        transform: translate(0, 0) scale(0.6);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(var(--tx), var(--ty)) scale(0);
+        opacity: 0;
+      }
+    }
+
+    .mini-heart {
+      position: absolute;
+      pointer-events: none;
+      animation: miniHeartFloat 0.75s ease-out forwards;
+      z-index: 49;
+    }
+
+    /* Glass pill buttons */
+    .glass-btn {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(156, 183, 212, 0.4);
+      box-shadow: 0 4px 18px -2px rgba(100, 116, 139, 0.12);
+      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-btn:hover {
+      background: rgba(255, 255, 255, 0.98);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px -4px rgba(133, 38, 56, 0.16);
+    }
+    .glass-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* Music equalizer bar animation */
+    @keyframes soundwave {
+      0%, 100% { height: 4px; }
+      50% { height: 16px; }
+    }
+    .sound-bar {
+      width: 2.5px;
+      background-color: var(--accent-burgundy);
+      border-radius: 2px;
+      animation: soundwave 1s ease-in-out infinite;
+    }
+    .sound-bar:nth-child(2) { animation-delay: 0.2s; }
+    .sound-bar:nth-child(3) { animation-delay: 0.4s; }
+    .sound-bar:nth-child(4) { animation-delay: 0.1s; }
+    .muted .sound-bar {
+      animation: none !important;
+      height: 3px !important;
+      opacity: 0.4;
+    }
+
+    /* Progress bar transition */
+    .story-progress {
+      transition: width 0.4s ease;
+    }
+
+    /* Custom scrollbar for horizontal thumbnail strip */
+    .thumb-scroll::-webkit-scrollbar {
+      height: 5px;
+    }
+    .thumb-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .thumb-scroll::-webkit-scrollbar-thumb {
+      background: rgba(156, 183, 212, 0.5);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+
+<body class="paper-texture min-h-screen flex flex-col justify-between selection:bg-rose-200 selection:text-rose-900">
+
+  <!-- Top Navigation Bar -->
+  <header class="w-full max-w-6xl mx-auto px-4 pt-4 sm:pt-6 pb-2 flex items-center justify-between z-30">
+    <div class="flex items-center space-x-3">
+      <div class="w-9 h-9 rounded-full bg-rose-100 flex items-center justify-center text-rose-600 shadow-sm border border-rose-200">
+        <svg class="w-5 h-5 fill-current" viewBox="0 0 24 24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </div>
+      <div>
+        <h1 class="text-base sm:text-lg font-serif-display font-semibold tracking-tight text-gray-800 leading-tight">
+          A Dispatch from the Coalition
+        </h1>
+        <p class="text-xs text-gray-500 font-medium">Double-tap card to send love ❤️</p>
+      </div>
+    </div>
+
+    <!-- Controls (Mute / Sound, Autoplay, Story Dots) -->
+    <div class="flex items-center space-x-2 sm:space-x-3">
+      <!-- Likes Tally Counter -->
+      <div id="heartCounter" class="hidden sm:flex items-center space-x-1 px-3 py-1.5 rounded-full bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold shadow-sm transition-all duration-300">
+        <svg class="w-3.5 h-3.5 fill-current text-rose-500 animate-pulse" viewBox="0 0 24 24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+        <span id="likeCount">0</span>
+      </div>
+
+      <!-- Music Mute / Unmute Button -->
+      <button id="audioToggleBtn" title="Toggle Background Music" class="glass-btn px-3 sm:px-4 py-2 rounded-full flex items-center space-x-2 text-xs font-medium text-gray-700">
+        <div id="soundBars" class="flex items-end space-x-0.5 h-4 w-4 justify-center">
+          <div class="sound-bar"></div>
+          <div class="sound-bar"></div>
+          <div class="sound-bar"></div>
+          <div class="sound-bar"></div>
+        </div>
+        <span id="audioLabel" class="hidden md:inline">Playing</span>
+        <svg id="muteIcon" class="w-4 h-4 hidden text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+          <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+        </svg>
+      </button>
+
+      <!-- Autoplay Toggle Button -->
+      <button id="autoplayBtn" title="Toggle Auto-presentation" class="glass-btn px-3 py-2 rounded-full flex items-center space-x-1.5 text-xs font-medium text-gray-700">
+        <svg id="playIconSvg" class="w-3.5 h-3.5 fill-current text-gray-600" viewBox="0 0 24 24">
+          <path d="M8 5v14l11-7z"/>
+        </svg>
+        <span class="hidden md:inline" id="autoplayText">Auto</span>
+      </button>
+
+      <!-- Fullscreen Toggle -->
+      <button id="fullscreenBtn" title="Fullscreen View" class="glass-btn p-2 rounded-full text-gray-700">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0 0h4m-4 0l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+        </svg>
+      </button>
+    </div>
+  </header>
+
+  <!-- Story Progress Segment Indicators -->
+  <div class="w-full max-w-4xl mx-auto px-4 mt-2 mb-1">
+    <div id="storyIndicators" class="flex items-center space-x-1.5 sm:space-x-2">
+      <!-- Populated dynamically via JavaScript for exact count of files (0.jpg -> 8.jpg) -->
+    </div>
+  </div>
+
+  <!-- Main Carousel Section -->
+  <main class="flex-1 w-full max-w-5xl mx-auto px-2 sm:px-6 flex flex-col justify-center items-center relative py-2">
+    
+    <div class="carousel-container relative w-full flex items-center justify-center min-h-[340px] sm:min-h-[460px] md:min-h-[540px]">
+      
+      <!-- Slide Track Holding All Uploaded Pictures strictly ordered 0.jpg to 8.jpg -->
+      <div id="slideStage" class="relative w-full max-w-3xl aspect-[16/10] sm:aspect-[16/10.2] flex items-center justify-center">
+        <!-- Slides are rendered dynamically with strictly preserved filenames -->
+      </div>
+
+      <!-- Left Navigation Arrow -->
+      <button id="prevBtn" aria-label="Previous Slide" class="glass-btn absolute left-2 sm:-left-5 lg:-left-7 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-gray-800 z-30 group">
+        <svg class="w-5 h-5 sm:w-6 sm:h-6 transform transition-transform group-hover:-translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
+        </svg>
+      </button>
+
+      <!-- Right Navigation Arrow -->
+      <button id="nextBtn" aria-label="Next Slide" class="glass-btn absolute right-2 sm:-right-5 lg:-right-7 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-14 sm:h-14 rounded-full flex items-center justify-center text-gray-800 z-30 group">
+        <svg class="w-5 h-5 sm:w-6 sm:h-6 transform transition-transform group-hover:translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
+        </svg>
+      </button>
+    </div>
+
+    <!-- Slide Caption / Index Details -->
+    <div class="flex items-center justify-between w-full max-w-xl px-4 mt-3 text-xs sm:text-sm text-gray-500 font-medium">
+      <span id="slideCounter" class="tracking-widest uppercase font-mono text-gray-600">CARD 1 OF 9</span>
+      <span class="flex items-center space-x-1.5 text-rose-800 bg-rose-50/80 px-2.5 py-1 rounded-full border border-rose-100/80">
+        <span class="inline-block w-1.5 h-1.5 rounded-full bg-rose-500 animate-ping"></span>
+        <span id="slideHint">Swipe or use arrows</span>
+      </span>
+      <span id="slideFileName" class="font-mono text-gray-400">0.jpg</span>
+    </div>
+
+  </main>
+
+  <!-- Bottom Thumbnail Navigation Bar -->
+  <footer class="w-full max-w-4xl mx-auto px-4 pb-4 pt-1 z-20">
+    <div class="bg-white/80 backdrop-blur-md rounded-2xl p-2 sm:p-2.5 border border-sky-100 shadow-sm flex items-center justify-start sm:justify-center overflow-x-auto thumb-scroll space-x-2" id="thumbnailStrip">
+      <!-- Thumbnail items populated via JS -->
+    </div>
+  </footer>
+
+  <!-- Background Audio Player (Seamless local file support + synthesized romantic ambient fallback) -->
+  <audio id="bgAudio" loop preload="auto">
+    <!-- Primary lookup: the attached song in standard audio formats -->
+    <source src="song.mp3" type="audio/mp3">
+  </audio>
+
+  <!-- Subtle Audio Start Helper Modal for browsers requiring explicit initial interaction -->
+  <div id="audioStartPrompt" class="fixed bottom-20 left-1/2 -translate-x-1/2 bg-white/95 backdrop-blur-md px-4 py-2.5 rounded-full shadow-lg border border-rose-200 z-50 flex items-center space-x-3 transition-all duration-500 transform translate-y-0 opacity-100 cursor-pointer hover:bg-white">
+    <span class="flex h-2.5 w-2.5 relative">
+      <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+      <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-500"></span>
+    </span>
+    <span class="text-xs font-medium text-gray-700">Tap anywhere to start music & experience 🎵</span>
+    <button class="text-gray-400 hover:text-gray-600 text-sm ml-1" onclick="dismissAudioPrompt(event)">×</button>
+  </div>
+
+  <script>
+    /* 
+     * Uploaded pictures strictly ordered by file name:
+     * 0.jpg, 1.jpg, 2.jpg, 3.jpg, 4.jpg, 5.jpg, 6.jpg, 7.jpg, 8.jpg
+     * Strictly NOT modified as requested.
+     */
+    const storyImages = [
+      { file: "0.jpg", title: "Dearest Inner Circle", caption: "The Gathering" },
+      { file: "1.jpg", title: "Operational Debriefing", caption: "The Delicate Science" },
+      { file: "2.jpg", title: "Long-term Case Study", caption: "Deeply Entangled" },
+      { file: "3.jpg", title: "VIP Section", caption: "The Sounding Boards" },
+      { file: "4.jpg", title: "The Present Moment", caption: "A Turning Point" },
+      { file: "5.jpg", title: "Performance Review", caption: "Administrative Board" },
+      { file: "6.jpg", title: "What was Missing", caption: "Beyond Devotion" },
+      { file: "7.jpg", title: "Municipal Paperwork", caption: "Civil Liability" },
+      { file: "8.jpg", title: "We're Getting Married!", caption: "The Grand Finale" }
+      { file: "9.jpg", title: "Performance Review", caption: "Administrative Board" },
+      { file: "10.jpg", title: "What was Missing", caption: "Beyond Devotion" },
+      { file: "11.jpg", title: "Municipal Paperwork", caption: "Civil Liability" },
+      { file: "12.jpg", title: "We're Getting Married!", caption: "The Grand Finale" }
+    ];
+
+    let currentIndex = 0;
+    let isAutoplayActive = false;
+    let autoplayTimer = null;
+    let totalLikes = 0;
+    let isMuted = false;
+    let audioStarted = false;
+    let webAudioSynthesizer = null;
+
+    // DOM references
+    const slideStage = document.getElementById('slideStage');
+    const thumbnailStrip = document.getElementById('thumbnailStrip');
+    const storyIndicators = document.getElementById('storyIndicators');
+    const prevBtn = document.getElementById('prevBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const slideCounter = document.getElementById('slideCounter');
+    const slideFileName = document.getElementById('slideFileName');
+    const audioToggleBtn = document.getElementById('audioToggleBtn');
+    const audioLabel = document.getElementById('audioLabel');
+    const muteIcon = document.getElementById('muteIcon');
+    const soundBars = document.getElementById('soundBars');
+    const bgAudio = document.getElementById('bgAudio');
+    const autoplayBtn = document.getElementById('autoplayBtn');
+    const playIconSvg = document.getElementById('playIconSvg');
+    const autoplayText = document.getElementById('autoplayText');
+    const heartCounter = document.getElementById('heartCounter');
+    const likeCountSpan = document.getElementById('likeCount');
+    const fullscreenBtn = document.getElementById('fullscreenBtn');
+    const audioStartPrompt = document.getElementById('audioStartPrompt');
+
+    // Web Audio Fallback: Generates a soft, romantic lofi acoustic piano chord progression
+    // so if the local "song.mp3" file is missing or blocked, the user STILL gets enchanting music!
+    class RomanticAmbientSynth {
+      constructor() {
+        this.ctx = null;
+        this.isPlaying = false;
+        this.timeoutId = null;
+        this.notes = [
+          // Gentle warm pentatonic & major 7th chord clusters (F - C - Dm - Bb / A - D - G)
+          [261.63, 329.63, 392.00, 493.88], // Cmaj7
+          [220.00, 261.63, 329.63, 392.00], // Am7
+          [174.61, 220.00, 261.63, 329.63], // Fmaj7
+          [196.00, 246.94, 293.66, 392.00]  // G7
+        ];
+        this.chordStep = 0;
+      }
+
+      init() {
+        if (!this.ctx) {
+          const AudioContext = window.AudioContext || window.webkitAudioContext;
+          this.ctx = new AudioContext();
+        }
+        if (this.ctx.state === 'suspended') {
+          this.ctx.resume();
+        }
+      }
+
+      playTone(freq, time, duration = 3.5, gainLevel = 0.04) {
+        if (!this.ctx) return;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        const filter = this.ctx.createBiquadFilter();
+
+        // Warm sine + low-pass filter gives a warm electric piano/rhodes timbre
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, time);
+
+        filter.type = 'lowpass';
+        filter.frequency.setValueAtTime(800, time);
+        filter.frequency.exponentialRampToValueAtTime(350, time + duration);
+
+        gain.gain.setValueAtTime(0.0001, time);
+        gain.gain.linearRampToValueAtTime(gainLevel, time + 0.12);
+        gain.gain.exponentialRampToValueAtTime(0.0001, time + duration);
+
+        osc.connect(filter);
+        filter.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(time);
+        osc.stop(time + duration);
+      }
+
+      scheduleArpeggio() {
+        if (!this.isPlaying || !this.ctx) return;
+        const now = this.ctx.currentTime;
+        const chord = this.notes[this.chordStep % this.notes.length];
+        this.chordStep++;
+
+        chord.forEach((freq, idx) => {
+          this.playTone(freq, now + idx * 0.35, 4.0, 0.035);
+        });
+
+        // Add a gentle high octave bell chime
+        const chimeFreq = chord[Math.floor(Math.random() * chord.length)] * 2;
+        this.playTone(chimeFreq, now + 1.6, 2.5, 0.02);
+
+        this.timeoutId = setTimeout(() => this.scheduleArpeggio(), 3600);
+      }
+
+      start() {
+        this.init();
+        this.isPlaying = true;
+        this.scheduleArpeggio();
+      }
+
+      stop() {
+        this.isPlaying = false;
+        if (this.timeoutId) clearTimeout(this.timeoutId);
+      }
+
+      setMute(mute) {
+        if (!this.ctx) return;
+        if (mute) {
+          this.stop();
+        } else {
+          this.start();
+        }
+      }
+    }
+
+    function playPopSound() {
+      try {
+        const AudioCtx = window.AudioContext || window.webkitAudioContext;
+        if (!AudioCtx) return;
+        const tempCtx = new AudioCtx();
+        const osc = tempCtx.createOscillator();
+        const gain = tempCtx.createGain();
+
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(520, tempCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, tempCtx.currentTime + 0.09);
+
+        gain.gain.setValueAtTime(0.07, tempCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.0001, tempCtx.currentTime + 0.12);
+
+        osc.connect(gain);
+        gain.connect(tempCtx.destination);
+
+        osc.start();
+        osc.stop(tempCtx.currentTime + 0.13);
+      } catch (e) {
+        // Silent fallback
+      }
+    }
+
+    function setupCarouselDOM() {
+      slideStage.innerHTML = '';
+      thumbnailStrip.innerHTML = '';
+      storyIndicators.innerHTML = '';
+
+      storyImages.forEach((item, index) => {
+        // 1. Create Main Slide Card
+        const card = document.createElement('div');
+        card.className = `slide-card absolute inset-0 w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer select-none bg-white shadow-xl border border-[#9CB7D4]/30`;
+        card.id = `slide-${index}`;
+        card.setAttribute('data-index', index);
+
+        // Standard image tag using the strictly unaltered filename
+        const img = document.createElement('img');
+        img.src = item.file;
+        img.alt = item.title;
+        img.className = 'w-full h-full object-contain sm:object-cover pointer-events-none transition-transform duration-700 ease-out';
+        img.loading = index < 2 ? 'eager' : 'lazy';
+
+        // Add subtle overlay glow on active card
+        const glowOverlay = document.createElement('div');
+        glowOverlay.className = 'absolute inset-0 pointer-events-none ring-1 ring-inset ring-black/5 rounded-2xl sm:rounded-3xl';
+
+        card.appendChild(img);
+        card.appendChild(glowOverlay);
+        slideStage.appendChild(card);
+
+        // Double-Tap and Click Listener for Heart Pop
+        setupDoubleTap(card);
+
+        // 2. Create Story Progress Bar Indicator
+        const indicator = document.createElement('div');
+        indicator.className = 'h-1.5 flex-1 bg-gray-200/80 rounded-full overflow-hidden cursor-pointer';
+        indicator.innerHTML = `<div class="story-progress h-full bg-[#852638] w-0 rounded-full" id="progress-${index}"></div>`;
+        indicator.addEventListener('click', () => goToSlide(index));
+        storyIndicators.appendChild(indicator);
+
+        // 3. Create Thumbnail Item
+        const thumb = document.createElement('button');
+        thumb.className = `flex-shrink-0 relative w-12 h-8 sm:w-16 sm:h-10 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
+          index === 0 ? 'border-[#852638] scale-105 shadow-md' : 'border-transparent opacity-60 hover:opacity-100'
+        }`;
+        thumb.id = `thumb-${index}`;
+        thumb.title = `Go to card ${index + 1}: ${item.title}`;
+        thumb.innerHTML = `
+          <img src="${item.file}" class="w-full h-full object-cover" alt="thumbnail ${index}" />
+          <span class="absolute bottom-0 right-0 bg-black/60 text-white font-mono text-[9px] px-1 rounded-tl">${index}</span>
+        `;
+        thumb.addEventListener('click', () => goToSlide(index));
+        thumbnailStrip.appendChild(thumb);
+      });
+
+      updateSlidePositions();
+    }
+
+    function setupDoubleTap(element) {
+      let lastTapTime = 0;
+      let tapTimeout = null;
+
+      // Pointer event covers both mobile touch and desktop mouse click smoothly
+      element.addEventListener('pointerup', (e) => {
+        const currentTime = new Date().getTime();
+        const tapInterval = currentTime - lastTapTime;
+
+        if (tapInterval < 320 && tapInterval > 0) {
+          // Double Tap Triggered!
+          clearTimeout(tapTimeout);
+          createHeartBurst(e, element);
+          lastTapTime = 0;
+        } else {
+          lastTapTime = currentTime;
+          // Single tap handling if needed
+          tapTimeout = setTimeout(() => {
+            lastTapTime = 0;
+          }, 350);
+        }
+      });
+    }
+
+    function createHeartBurst(event, container) {
+      const rect = container.getBoundingClientRect();
+      const x = event.clientX ? (event.clientX - rect.left) : (rect.width / 2);
+      const y = event.clientY ? (event.clientY - rect.top) : (rect.height / 2);
+
+      // Play soft cheerful pop tone
+      playPopSound();
+
+      // Update hearts counter
+      totalLikes++;
+      likeCountSpan.textContent = totalLikes;
+      heartCounter.classList.remove('hidden');
+      heartCounter.classList.add('scale-110');
+      setTimeout(() => heartCounter.classList.remove('scale-110'), 200);
+
+      // Main big bursting heart
+      const heart = document.createElement('div');
+      heart.className = 'heart-burst text-rose-500';
+      heart.style.left = `${x}px`;
+      heart.style.top = `${y}px`;
+      heart.innerHTML = `
+        <svg class="w-20 h-20 sm:w-28 sm:h-28 fill-current drop-shadow-lg" viewBox="0 0 24 24">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      `;
+      container.appendChild(heart);
+
+      // Emit small radiating particle hearts
+      const particleColors = ['#E26D82', '#852638', '#F43F5E', '#FB7185', '#FDA4AF'];
+      for (let i = 0; i < 7; i++) {
+        const mini = document.createElement('div');
+        mini.className = 'mini-heart';
+        const angle = (Math.PI * 2 / 7) * i + (Math.random() * 0.4 - 0.2);
+        const distance = 45 + Math.random() * 45;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance - 20;
+
+        mini.style.setProperty('--tx', `${tx}px`);
+        mini.style.setProperty('--ty', `${ty}px`);
+        mini.style.left = `${x}px`;
+        mini.style.top = `${y}px`;
+        const color = particleColors[i % particleColors.length];
+
+        mini.innerHTML = `
+          <svg class="w-5 h-5" style="fill: ${color}" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        `;
+        container.appendChild(mini);
+
+        setTimeout(() => mini.remove(), 750);
+      }
+
+      // Cleanup main heart after animation finishes
+      setTimeout(() => heart.remove(), 920);
+    }
+
+    function updateSlidePositions() {
+      const total = storyImages.length;
+
+      storyImages.forEach((_, idx) => {
+        const slide = document.getElementById(`slide-${idx}`);
+        const thumb = document.getElementById(`thumb-${idx}`);
+        const progressBar = document.getElementById(`progress-${idx}`);
+
+        if (!slide) return;
+
+        const offset = idx - currentIndex;
+        const absOffset = Math.abs(offset);
+
+        if (offset === 0) {
+          // Current Active Slide
+          slide.style.transform = `translateX(0%) scale(1) rotateY(0deg) translateZ(0px)`;
+          slide.style.opacity = '1';
+          slide.style.zIndex = '20';
+          slide.style.pointerEvents = 'auto';
+          slide.style.filter = 'drop-shadow(0 20px 25px rgba(100, 116, 139, 0.18))';
+        } else if (offset === -1 || (offset > 0 && offset > total - 2 && idx === 0)) {
+          // Previous Slide (peeking on left)
+          slide.style.transform = `translateX(-65%) scale(0.85) rotateY(18deg) translateZ(-80px)`;
+          slide.style.opacity = '0.35';
+          slide.style.zIndex = '10';
+          slide.style.pointerEvents = 'none';
+          slide.style.filter = 'blur(1px)';
+        } else if (offset === 1 || (offset < 0 && absOffset > total - 2 && idx === total - 1)) {
+          // Next Slide (peeking on right)
+          slide.style.transform = `translateX(65%) scale(0.85) rotateY(-18deg) translateZ(-80px)`;
+          slide.style.opacity = '0.35';
+          slide.style.zIndex = '10';
+          slide.style.pointerEvents = 'none';
+          slide.style.filter = 'blur(1px)';
+        } else {
+          // Hidden distant slides
+          const direction = offset > 0 ? 110 : -110;
+          slide.style.transform = `translateX(${direction}%) scale(0.7) translateZ(-200px)`;
+          slide.style.opacity = '0';
+          slide.style.zIndex = '0';
+          slide.style.pointerEvents = 'none';
+        }
+
+        // Update Thumbnails
+        if (thumb) {
+          if (idx === currentIndex) {
+            thumb.className = 'flex-shrink-0 relative w-12 h-8 sm:w-16 sm:h-10 rounded-lg overflow-hidden border-2 border-[#852638] scale-105 shadow-md opacity-100';
+            thumb.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+          } else {
+            thumb.className = 'flex-shrink-0 relative w-12 h-8 sm:w-16 sm:h-10 rounded-lg overflow-hidden border-2 border-transparent opacity-60 hover:opacity-100 transition-all';
+          }
+        }
+
+        // Update Progress Bars
+        if (progressBar) {
+          if (idx <= currentIndex) {
+            progressBar.style.width = '100%';
+          } else {
+            progressBar.style.width = '0%';
+          }
+        }
+      });
+
+      // Update Text Counters
+      slideCounter.textContent = `CARD ${currentIndex + 1} OF ${total}`;
+      slideFileName.textContent = storyImages[currentIndex].file;
+
+      // Special Celebration Trigger for Grand Finale card (8.jpg)
+      if (currentIndex === 8) {
+        triggerGrandFinaleConfetti();
+      }
+    }
+
+    function triggerGrandFinaleConfetti() {
+      if (typeof confetti === 'function') {
+        // Heart & pastel burst celebrating "We're getting married!"
+        confetti({
+          particleCount: 80,
+          spread: 70,
+          origin: { y: 0.6 },
+          colors: ['#852638', '#E26D82', '#9CB7D4', '#FCD34D', '#F472B6'],
+          disableForReducedMotion: true
+        });
+      }
+    }
+
+    function nextSlide() {
+      if (currentIndex < storyImages.length - 1) {
+        currentIndex++;
+      } else {
+        currentIndex = 0; // Loop seamlessly
+      }
+      updateSlidePositions();
+    }
+
+    function prevSlide() {
+      if (currentIndex > 0) {
+        currentIndex--;
+      } else {
+        currentIndex = storyImages.length - 1;
+      }
+      updateSlidePositions();
+    }
+
+    function goToSlide(index) {
+      if (index >= 0 && index < storyImages.length) {
+        currentIndex = index;
+        updateSlidePositions();
+      }
+    }
+
+    // Button event listeners
+    nextBtn.addEventListener('click', nextSlide);
+    prevBtn.addEventListener('click', prevSlide);
+
+    // Keyboard Arrow navigation
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        nextSlide();
+      } else if (e.key === 'ArrowLeft') {
+        prevSlide();
+      } else if (e.key === 'm' || e.key === 'M') {
+        toggleMute();
+      }
+    });
+
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchEndX = 0;
+    let touchEndY = 0;
+
+    slideStage.addEventListener('touchstart', (e) => {
+      touchStartX = e.changedTouches[0].screenX;
+      touchStartY = e.changedTouches[0].screenY;
+    }, { passive: true });
+
+    slideStage.addEventListener('touchend', (e) => {
+      touchEndX = e.changedTouches[0].screenX;
+      touchEndY = e.changedTouches[0].screenY;
+      handleSwipe();
+    }, { passive: true });
+
+    function handleSwipe() {
+      const deltaX = touchEndX - touchStartX;
+      const deltaY = touchEndY - touchStartY;
+
+      // Ensure horizontal swipe is dominant
+      if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 45) {
+        if (deltaX < 0) {
+          nextSlide(); // Swiped left -> next
+        } else {
+          prevSlide(); // Swiped right -> prev
+        }
+      }
+    }
+
+    function initAudio() {
+      if (audioStarted) return;
+      audioStarted = true;
+
+      // Attempt to play the attached audio file
+      bgAudio.volume = 0.55;
+      const playPromise = bgAudio.play();
+
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          // Audio file played successfully
+          setAudioVisuals(true);
+        }).catch(() => {
+          // Local/attached audio file couldn't autoplay or wasn't found at 'song.mp3'
+          // Initialize our procedural romantic synthesizer so the user always has soothing music!
+          if (!webAudioSynthesizer) {
+            webAudioSynthesizer = new RomanticAmbientSynth();
+          }
+          webAudioSynthesizer.start();
+          setAudioVisuals(true);
+        });
+      }
+
+      // Hide audio invitation prompt once interaction starts
+      if (audioStartPrompt) {
+        audioStartPrompt.style.opacity = '0';
+        audioStartPrompt.style.transform = 'translate(-50%, 20px)';
+        setTimeout(() => audioStartPrompt.remove(), 500);
+      }
+    }
+
+    function toggleMute() {
+      initAudio();
+      isMuted = !isMuted;
+
+      // Handle HTML5 audio element
+      bgAudio.muted = isMuted;
+
+      // Handle procedural ambient synthesizer
+      if (webAudioSynthesizer) {
+        webAudioSynthesizer.setMute(isMuted);
+      }
+
+      setAudioVisuals(!isMuted);
+    }
+
+    function setAudioVisuals(active) {
+      if (active && !isMuted) {
+        soundBars.classList.remove('muted');
+        muteIcon.classList.add('hidden');
+        soundBars.classList.remove('hidden');
+        audioLabel.textContent = 'Mute';
+      } else {
+        soundBars.classList.add('muted');
+        soundBars.classList.add('hidden');
+        muteIcon.classList.remove('hidden');
+        audioLabel.textContent = 'Unmute';
+      }
+    }
+
+    audioToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMute();
+    });
+
+    window.dismissAudioPrompt = function(e) {
+      e.stopPropagation();
+      if (audioStartPrompt) audioStartPrompt.remove();
+    };
+
+    // First user tap on the screen safely unlocks audio autoplay
+    document.addEventListener('pointerdown', function onceUnlock() {
+      initAudio();
+      document.removeEventListener('pointerdown', onceUnlock);
+    }, { once: true });
+
+    autoplayBtn.addEventListener('click', () => {
+      isAutoplayActive = !isAutoplayActive;
+      if (isAutoplayActive) {
+        autoplayBtn.classList.add('bg-rose-50', 'text-rose-700', 'border-rose-300');
+        playIconSvg.innerHTML = '<rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/>';
+        autoplayText.textContent = 'Pause';
+        startAutoplay();
+      } else {
+        autoplayBtn.classList.remove('bg-rose-50', 'text-rose-700', 'border-rose-300');
+        playIconSvg.innerHTML = '<path d="M8 5v14l11-7z"/>';
+        autoplayText.textContent = 'Auto';
+        stopAutoplay();
+      }
+    });
+
+    function startAutoplay() {
+      stopAutoplay();
+      autoplayTimer = setInterval(() => {
+        nextSlide();
+      }, 5000); // 5 seconds per story card
+    }
+
+    function stopAutoplay() {
+      if (autoplayTimer) {
+        clearInterval(autoplayTimer);
+        autoplayTimer = null;
+      }
+    }
+
+    fullscreenBtn.addEventListener('click', () => {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    });
+
+    // Window load entry
+    window.addEventListener('load', () => {
+      setupCarouselDOM();
+    });
+  </script>
+</body>
+</html>
