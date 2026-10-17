@@ -6,7 +6,7 @@
   <title>Little Light Reading</title>
 
   <!-- 
-    CRITICAL HD PRELOAD: Eagerly pre-cache all 13 announcement images (0.gif, 1.jpg - 12.jpg)
+    CRITICAL HD PRELOAD: Eagerly pre-cache all 13 announcement images (0.jpg - 12.jpg)
     Ensures zero progressive decoding delay or blurred partial frames across all browsers
   -->
   <link rel="preload" as="image" href="0.gif">
@@ -351,10 +351,10 @@
 
   <script>
     /*
-     * 13 Pictures in strict sequence: 0.gif through 12.jpg
+     * 13 Pictures in strict sequence: 0.jpg through 12.jpg
      */
     const totalPictures = 13;
-    const pictureFiles = Array.from({ length: totalPictures }, (_, i) => (i === 0 ? '0.gif' : `${i}.jpg`));
+    const pictureFiles = Array.from({ length: totalPictures }, (_, i) => i === 0 ? '0.gif' : `${i}.jpg`);
 
     let activeIndex = 0;
     let audioInitiated = false;
@@ -630,4 +630,253 @@
         mini.className = 'mini-heart';
         const angle = (Math.PI * 2 / 8) * i + (Math.random() * 0.3 - 0.15);
         const distance = 46 + Math.random() * 50;
-        const tx = Math.cos(angle) *
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance - 18;
+
+        mini.style.setProperty('--tx', `${tx}px`);
+        mini.style.setProperty('--ty', `${ty}px`);
+        mini.style.left = `${x}px`;
+        mini.style.top = `${y}px`;
+
+        const color = colors[i % colors.length];
+        mini.innerHTML = `
+          <svg class="w-5 h-5 sm:w-6 sm:h-6" style="fill: ${color}" viewBox="0 0 24 24">
+            <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+          </svg>
+        `;
+        activeCard.appendChild(mini);
+
+        setTimeout(() => mini.remove(), 650);
+      }
+
+      setTimeout(() => mainHeart.remove(), 800);
+    }
+
+    /*
+     * RENDER SLIDE POSITIONS
+     * Active slide gets .is-active with 'transform: none !important;'
+     * Inactive slides get .is-prev or .is-next.
+     */
+    function renderSlidePositions() {
+      pictureFiles.forEach((_, idx) => {
+        const slide = document.getElementById(`slide-${idx}`);
+        const fillBar = document.getElementById(`fill-${idx}`);
+
+        if (!slide) return;
+
+        if (idx === activeIndex) {
+          slide.className = 'slide-card is-active';
+        } else if (idx < activeIndex) {
+          slide.className = 'slide-card is-prev';
+        } else {
+          slide.className = 'slide-card is-next';
+        }
+
+        // Top Progress Segment
+        if (fillBar) {
+          fillBar.style.width = idx <= activeIndex ? '100%' : '0%';
+        }
+      });
+
+      // Confetti trigger specifically on 8.jpg ("We're getting married.")
+      if (activeIndex === 8 && typeof confetti === 'function') {
+        confetti({
+          particleCount: 110,
+          spread: 80,
+          origin: { y: 0.6 },
+          colors: ['#852638', '#E26D82', '#9CB7D4', '#FCD34D', '#F472B6']
+        });
+        setTimeout(() => {
+          if (activeIndex === 8) {
+            confetti({
+              particleCount: 50,
+              angle: 60,
+              spread: 55,
+              origin: { x: 0 },
+              colors: ['#852638', '#E26D82', '#FCD34D']
+            });
+            confetti({
+              particleCount: 50,
+              angle: 120,
+              spread: 55,
+              origin: { x: 1 },
+              colors: ['#852638', '#E26D82', '#9CB7D4']
+            });
+          }
+        }, 220);
+      }
+    }
+
+    function advanceNext() {
+      activeIndex = (activeIndex < totalPictures - 1) ? activeIndex + 1 : 0;
+      renderSlidePositions();
+    }
+
+    function advancePrev() {
+      activeIndex = (activeIndex > 0) ? activeIndex - 1 : totalPictures - 1;
+      renderSlidePositions();
+    }
+
+    function jumpToSlide(index) {
+      if (index >= 0 && index < totalPictures) {
+        activeIndex = index;
+        renderSlidePositions();
+      }
+    }
+
+    // Button interactions
+    nextArrow.addEventListener('click', (e) => {
+      e.stopPropagation();
+      advanceNext();
+    });
+    prevArrow.addEventListener('click', (e) => {
+      e.stopPropagation();
+      advancePrev();
+    });
+
+    // Keyboard bindings for PC browsers
+    window.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') {
+        advanceNext();
+      } else if (e.key === 'ArrowLeft') {
+        advancePrev();
+      } else if (e.key === 'm' || e.key === 'M') {
+        toggleMute();
+      }
+    });
+
+    // Re-evaluate on orientation / screen resize
+    window.addEventListener('resize', () => {
+      renderSlidePositions();
+    });
+
+    /*
+     * Audio Controls
+     */
+    function startMusic() {
+      if (isSoundMuted) return;
+
+      backgroundAudio.volume = 0.55;
+      const playPromise = backgroundAudio.play();
+
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          audioInitiated = true;
+          updateMuteButtonVisuals(true);
+        }).catch(() => {
+          // If browser policy blocked playback on cold start or file failed
+          if (audioInitiated && !romanticPianoSynth && !isSoundMuted) {
+            romanticPianoSynth = new AmbientPianoSynthesizer();
+            romanticPianoSynth.start();
+            updateMuteButtonVisuals(true);
+          }
+        });
+      }
+    }
+
+    function attemptAutoPlay() {
+      if (isSoundMuted) return;
+      startMusic();
+    }
+
+    function toggleMute() {
+      audioInitiated = true;
+      isSoundMuted = !isSoundMuted;
+
+      backgroundAudio.muted = isSoundMuted;
+
+      if (isSoundMuted) {
+        backgroundAudio.pause();
+        if (romanticPianoSynth) {
+          romanticPianoSynth.setMute(true);
+        }
+        updateMuteButtonVisuals(false);
+      } else {
+        const playPromise = backgroundAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            updateMuteButtonVisuals(true);
+          }).catch(() => {
+            if (!romanticPianoSynth) {
+              romanticPianoSynth = new AmbientPianoSynthesizer();
+            }
+            romanticPianoSynth.start();
+            updateMuteButtonVisuals(true);
+          });
+        }
+        if (romanticPianoSynth) {
+          romanticPianoSynth.setMute(false);
+        }
+        updateMuteButtonVisuals(true);
+      }
+    }
+
+    function updateMuteButtonVisuals(isPlaying) {
+      if (isPlaying && !isSoundMuted) {
+        waveContainer.classList.remove('is-muted');
+        waveContainer.classList.remove('hidden');
+        muteCrossIcon.classList.add('hidden');
+        muteLabelText.textContent = 'Mute';
+      } else {
+        waveContainer.classList.add('is-muted');
+        waveContainer.classList.add('hidden');
+        muteCrossIcon.classList.remove('hidden');
+        muteLabelText.textContent = 'Unmute';
+      }
+    }
+
+    muteToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMute();
+    });
+
+    // Multi-stage Autoplay Triggering:
+    // 1. Immediate execution attempt
+    attemptAutoPlay();
+
+    // 2. DOMContentLoaded attempt
+    document.addEventListener('DOMContentLoaded', attemptAutoPlay);
+
+    // 3. Audio ready events
+    backgroundAudio.addEventListener('canplay', attemptAutoPlay, { once: true });
+    backgroundAudio.addEventListener('canplaythrough', attemptAutoPlay, { once: true });
+
+    // 4. Capture-phase unlock listeners on any early user gesture if blocked by browser policy
+    const unlockEvents = ['pointerdown', 'touchstart', 'touchend', 'mousedown', 'click', 'keydown', 'wheel'];
+    function unlockAudioHandler() {
+      audioInitiated = true;
+      if (!isSoundMuted) {
+        const promise = backgroundAudio.play();
+        if (promise !== undefined) {
+          promise.then(() => {
+            updateMuteButtonVisuals(true);
+          }).catch(() => {
+            if (!romanticPianoSynth && !isSoundMuted) {
+              romanticPianoSynth = new AmbientPianoSynthesizer();
+              romanticPianoSynth.start();
+              updateMuteButtonVisuals(true);
+            }
+          });
+        }
+      }
+      unlockEvents.forEach(evt => window.removeEventListener(evt, unlockAudioHandler, { capture: true }));
+    }
+    unlockEvents.forEach(evt => window.addEventListener(evt, unlockAudioHandler, { capture: true, passive: true }));
+
+    // Fallback if audio file cannot be loaded
+    backgroundAudio.addEventListener('error', () => {
+      if (audioInitiated && !isSoundMuted && !romanticPianoSynth) {
+        romanticPianoSynth = new AmbientPianoSynthesizer();
+        romanticPianoSynth.start();
+        updateMuteButtonVisuals(true);
+      }
+    });
+
+    // Initialize carousel on load and re-attempt playback
+    window.addEventListener('load', () => {
+      initCarousel();
+      attemptAutoPlay();
+    });
+  </script>
+</body>
+</html>
