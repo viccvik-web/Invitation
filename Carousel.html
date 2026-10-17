@@ -6,9 +6,10 @@
   <title>Little Light Reading</title>
 
   <!-- 
-    CRITICAL HD PRELOAD: Eagerly pre-cache all 13 announcement images (0.jpg - 12.jpg)
+    CRITICAL HD PRELOAD: Eagerly pre-cache all 13 announcement images (0.gif/0.jpg - 12.jpg)
     Ensures zero progressive decoding delay or blurred partial frames across all browsers
   -->
+  <link rel="preload" as="image" href="0.gif">
   <link rel="preload" as="image" href="0.jpg">
   <link rel="preload" as="image" href="1.jpg">
   <link rel="preload" as="image" href="2.jpg">
@@ -342,8 +343,8 @@
 
   <!-- Audio element referencing user's attached song file -->
   <audio id="backgroundAudio" autoplay loop preload="auto" playsinline webkit-playsinline>
-    <source src="song-01.mp3" type="audio/mpeg">
-   <!-- <source src="song.mp3" type="audio/mpeg">
+    <source src="song-01" type="audio/mpeg">
+     <!-- <source src="song.mp3" type="audio/mpeg">
     <source src="audio.mp3" type="audio/mpeg">
     <source src="music.mp3" type="audio/mpeg">
     -->
@@ -351,10 +352,13 @@
 
   <script>
     /*
-     * 13 Pictures in strict sequence: 0.jpg through 12.jpg
+     * 13 Pictures in strict sequence: 0.gif (with 0.jpg fallback) through 12.jpg
      */
     const totalPictures = 13;
-    const pictureFiles = Array.from({ length: totalPictures }, (_, i) => `${i}.jpg`);
+    const pictureFiles = [
+      '0.gif',
+      ...Array.from({ length: totalPictures - 1 }, (_, i) => `${i + 1}.jpg`)
+    ];
 
     let activeIndex = 0;
     let audioInitiated = false;
@@ -517,16 +521,30 @@
 
         // 3. Image Tag with synchronous rendering and direct border radius
         const img = document.createElement('img');
-        img.src = fileName;
         img.alt = `Story image ${index}`;
         img.className = 'story-image';
         img.setAttribute('loading', 'eager');
-        img.setAttribute('decoding', 'sync');
 
-        // Fallback placeholder if asset filename differs
-        img.onerror = () => {
-          img.src = `https://placehold.co/1000x625/FAF6EE/852638?text=${encodeURIComponent(fileName)}`;
-        };
+        if (index === 0) {
+          // Animated GIF for slide 0 with automatic playback and fallback to 0.jpg
+          img.setAttribute('decoding', 'auto');
+          img.src = '0.gif';
+          img.onerror = () => {
+            if (!img.dataset.fallbackApplied) {
+              img.dataset.fallbackApplied = 'true';
+              img.src = '0.jpg';
+            } else {
+              img.src = `https://placehold.co/1000x625/FAF6EE/852638?text=0.gif`;
+            }
+          };
+        } else {
+          img.setAttribute('decoding', 'sync');
+          img.src = fileName;
+          // Fallback placeholder if asset filename differs
+          img.onerror = () => {
+            img.src = `https://placehold.co/1000x625/FAF6EE/852638?text=${encodeURIComponent(fileName)}`;
+          };
+        }
 
         card.appendChild(img);
         cardDeck.appendChild(card);
