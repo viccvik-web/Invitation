@@ -2,79 +2,110 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Photo Carousel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Story Carousel</title>
   
-  <!-- Tailwind CSS -->
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   
-  <!-- Google Fonts -->
+  <!-- Plus Jakarta Sans Font -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   
-  <!-- Confetti Celebration for Final Slide -->
+  <!-- Canvas Confetti Library -->
   <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
 
   <style>
     :root {
-      --bg-cream: #F9F6F0;
+      --bg-cream: #FAF6EE;
       --accent-burgundy: #852638;
       --accent-rose: #E26D82;
+      --sat: env(safe-area-inset-top, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
     }
 
     * {
       -webkit-tap-highlight-color: transparent;
       user-select: none;
       -webkit-user-select: none;
+      box-sizing: border-box;
     }
 
-    body {
-      background-color: var(--bg-cream);
-      font-family: 'Plus Jakarta Sans', sans-serif;
+    /* Disable native double-tap zoom so the custom heart gesture triggers instantly */
+    html, body {
+      height: 100%;
+      height: 100vh;
+      height: 100dvh;
+      width: 100vw;
+      margin: 0;
+      padding: 0;
       overflow: hidden;
-      touch-action: pan-y;
+      touch-action: manipulation;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg-cream);
     }
 
-    /* Ambient paper backdrop */
+    /* Subtle luxury textured backdrop */
     .ambient-bg {
       background-color: #FAF6EE;
       background-image: 
-        radial-gradient(at 0% 0%, rgba(226, 109, 130, 0.08) 0px, transparent 50%),
-        radial-gradient(at 100% 100%, rgba(156, 183, 212, 0.12) 0px, transparent 50%),
-        radial-gradient(rgba(133, 38, 56, 0.025) 1px, transparent 0);
-      background-size: 100% 100%, 100% 100%, 22px 22px;
+        radial-gradient(at 0% 0%, rgba(226, 109, 130, 0.08) 0px, transparent 55%),
+        radial-gradient(at 100% 100%, rgba(156, 183, 212, 0.12) 0px, transparent 55%),
+        radial-gradient(rgba(133, 38, 56, 0.03) 1px, transparent 0);
+      background-size: 100% 100%, 100% 100%, 24px 24px;
     }
 
-    /* 3D perspective stage for cards */
+    /* 3D Perspective Stage */
     .carousel-stage {
       perspective: 1200px;
+      transform-style: preserve-3d;
+    }
+
+    /* Adaptive Card Container holding the ~16:10 postcard format */
+    .card-box {
+      position: relative;
+      /* On mobile portrait: fill width up to 94vw.
+         On mobile landscape & desktop: scale dynamically without exceeding available vertical height */
+      width: min(94vw, calc((100dvh - 100px) * 1.6), 1040px);
+      height: min(calc(94vw / 1.6), calc(100dvh - 100px), 650px);
+      max-height: calc(100dvh - 80px);
+    }
+
+    /* In mobile landscape orientation, adapt bounds for compact height */
+    @media (max-height: 520px) {
+      .card-box {
+        width: min(92vw, calc((100dvh - 48px) * 1.6));
+        height: calc(100dvh - 48px);
+      }
     }
 
     .slide-card {
-      transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-                  opacity 0.6s cubic-bezier(0.16, 1, 0.3, 1),
-                  filter 0.5s ease;
+      transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                  opacity 0.55s cubic-bezier(0.16, 1, 0.3, 1),
+                  filter 0.45s ease;
       will-change: transform, opacity;
       transform-style: preserve-3d;
     }
 
-    /* Floating Heart Pop Animation */
+    /* Heart Pop Animation */
     @keyframes popHeart {
       0% {
-        transform: translate(-50%, -50%) scale(0) rotate(-12deg);
+        transform: translate(-50%, -50%) scale(0) rotate(-14deg);
         opacity: 0;
       }
       35% {
-        transform: translate(-50%, -50%) scale(1.4) rotate(8deg);
+        transform: translate(-50%, -50%) scale(1.35) rotate(6deg);
         opacity: 1;
       }
-      60% {
-        transform: translate(-50%, -50%) scale(1.1) rotate(-4deg);
+      65% {
+        transform: translate(-50%, -50%) scale(1.08) rotate(-3deg);
         opacity: 0.95;
       }
       100% {
-        transform: translate(-50%, -85%) scale(1.7) rotate(0deg);
+        transform: translate(-50%, -85%) scale(1.6) rotate(0deg);
         opacity: 0;
       }
     }
@@ -82,14 +113,14 @@
     .heart-burst {
       position: absolute;
       pointer-events: none;
-      animation: popHeart 0.9s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
-      z-index: 60;
-      filter: drop-shadow(0 10px 20px rgba(226, 109, 130, 0.55));
+      animation: popHeart 0.85s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+      z-index: 70;
+      filter: drop-shadow(0 10px 24px rgba(226, 109, 130, 0.55));
     }
 
     @keyframes particleDrift {
       0% {
-        transform: translate(0, 0) scale(0.8);
+        transform: translate(0, 0) scale(0.9);
         opacity: 1;
       }
       100% {
@@ -101,133 +132,132 @@
     .mini-heart {
       position: absolute;
       pointer-events: none;
-      animation: particleDrift 0.75s ease-out forwards;
-      z-index: 59;
+      animation: particleDrift 0.7s ease-out forwards;
+      z-index: 69;
     }
 
-    /* Minimalist Glass Mute Button */
+    /* Glass Mute Button */
     .glass-mute-btn {
-      background: rgba(255, 255, 255, 0.82);
+      background: rgba(255, 255, 255, 0.86);
       backdrop-filter: blur(14px);
       -webkit-backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.8);
-      box-shadow: 0 4px 20px -2px rgba(100, 116, 139, 0.16);
-      transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+      border: 1px solid rgba(255, 255, 255, 0.85);
+      box-shadow: 0 4px 18px -2px rgba(100, 116, 139, 0.16);
+      transition: all 0.22s cubic-bezier(0.4, 0, 0.2, 1);
     }
     .glass-mute-btn:hover {
       background: rgba(255, 255, 255, 0.98);
-      transform: scale(1.05);
-      box-shadow: 0 6px 24px -2px rgba(133, 38, 56, 0.2);
+      transform: scale(1.04);
+      box-shadow: 0 6px 22px -2px rgba(133, 38, 56, 0.2);
     }
     .glass-mute-btn:active {
-      transform: scale(0.94);
+      transform: scale(0.93);
     }
 
-    /* Soundwave animation inside mute button */
+    /* Soundwave bars */
     @keyframes wavePulse {
-      0%, 100% { height: 4px; }
-      50% { height: 16px; }
+      0%, 100% { height: 3.5px; }
+      50% { height: 15px; }
     }
     .wave-bar {
       width: 2.5px;
       background-color: var(--accent-burgundy);
       border-radius: 9999px;
-      animation: wavePulse 1s ease-in-out infinite;
+      animation: wavePulse 0.95s ease-in-out infinite;
     }
-    .wave-bar:nth-child(2) { animation-delay: 0.18s; }
-    .wave-bar:nth-child(3) { animation-delay: 0.36s; }
+    .wave-bar:nth-child(2) { animation-delay: 0.16s; }
+    .wave-bar:nth-child(3) { animation-delay: 0.32s; }
     .wave-bar:nth-child(4) { animation-delay: 0.12s; }
     .is-muted .wave-bar {
       animation: none !important;
       height: 3px !important;
-      opacity: 0.4;
+      opacity: 0.35;
     }
 
-    /* Side navigation arrow overlays */
+    /* Nav Arrows */
     .nav-arrow {
-      background: rgba(255, 255, 255, 0.75);
-      backdrop-filter: blur(10px);
-      -webkit-backdrop-filter: blur(10px);
+      background: rgba(255, 255, 255, 0.8);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.9);
-      box-shadow: 0 6px 24px -4px rgba(0, 0, 0, 0.08);
-      transition: all 0.25s ease;
+      box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
+      transition: all 0.22s ease;
       opacity: 0.45;
     }
     .nav-arrow:hover {
       opacity: 1;
       transform: translateY(-50%) scale(1.08);
-      background: rgba(255, 255, 255, 0.95);
-      box-shadow: 0 8px 30px -4px rgba(133, 38, 56, 0.22);
+      background: rgba(255, 255, 255, 0.98);
+      box-shadow: 0 6px 26px -2px rgba(133, 38, 56, 0.22);
     }
     .nav-arrow:active {
-      transform: translateY(-50%) scale(0.95);
+      transform: translateY(-50%) scale(0.94);
     }
 
     /* Story bar progress fill transition */
     .story-bar-fill {
-      transition: width 0.35s ease-out;
+      transition: width 0.32s ease-out;
     }
   </style>
 </head>
 
-<body class="ambient-bg h-screen w-screen flex flex-col justify-between items-center relative p-3 sm:p-6 selection:bg-rose-100">
+<body class="ambient-bg flex flex-col justify-center items-center relative">
 
-  <!-- Top Minimalist Progress Bar (12 Segments) -->
-  <nav class="w-full max-w-4xl pt-1 sm:pt-2 px-2 z-40 flex items-center justify-between gap-4">
-    <div id="storyBars" class="flex-1 flex items-center space-x-1 sm:space-x-1.5 h-1">
-      <!-- 12 progress bar segments generated via JS -->
+  <!-- Top Minimalist Progress Bar (13 Segments) with Safe-Area Margin -->
+  <div style="top: max(12px, env(safe-area-inset-top)); left: max(12px, env(safe-area-inset-left)); right: calc(max(12px, env(safe-area-inset-right)) + 86px);"
+       class="fixed z-40 flex items-center h-1">
+    <div id="storyBars" class="w-full flex items-center space-x-1 sm:space-x-1.5 h-1">
+      <!-- 13 progress bar segments generated via JS -->
     </div>
-  </nav>
+  </div>
 
-  <!-- Floating Audio Mute / Unmute Button -->
-  <div class="fixed top-4 right-4 sm:top-6 sm:right-6 z-50">
-    <button id="muteToggleBtn" aria-label="Toggle Sound" class="glass-mute-btn px-3.5 py-2.5 rounded-full flex items-center space-x-2 text-xs font-semibold text-gray-800 cursor-pointer">
-      <div id="waveContainer" class="flex items-end space-x-0.5 h-4 w-4 justify-center">
+  <!-- Floating Audio Mute / Unmute Button with Safe-Area Inset -->
+  <div style="top: max(10px, env(safe-area-inset-top)); right: max(12px, env(safe-area-inset-right));"
+       class="fixed z-50">
+    <button id="muteToggleBtn" aria-label="Toggle Sound" class="glass-mute-btn px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-full flex items-center space-x-2 text-xs font-semibold text-gray-800 cursor-pointer">
+      <div id="waveContainer" class="flex items-end space-x-0.5 h-3.5 w-3.5 sm:h-4 sm:w-4 justify-center">
         <div class="wave-bar"></div>
         <div class="wave-bar"></div>
         <div class="wave-bar"></div>
         <div class="wave-bar"></div>
       </div>
-      <svg id="muteCrossIcon" class="w-4 h-4 text-gray-500 hidden" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
+      <svg id="muteCrossIcon" class="w-3.5 h-3.5 sm:w-4 sm:h-4 text-gray-500 hidden" fill="none" stroke="currentColor" stroke-width="2.2" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
         <path stroke-linecap="round" stroke-linejoin="round" d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
       </svg>
-      <span id="muteLabelText" class="tracking-wide">Mute</span>
+      <span id="muteLabelText" class="tracking-wide text-[11px] sm:text-xs">Mute</span>
     </button>
   </div>
 
-  <main class="flex-1 w-full max-w-5xl flex items-center justify-center relative my-auto">
-    
-    <div class="carousel-stage relative w-full h-[76vh] max-h-[820px] flex items-center justify-center">
+  <!-- Main Carousel Stage -->
+  <main class="w-full h-full flex items-center justify-center relative px-2 sm:px-4">
+    <div class="carousel-stage relative w-full flex items-center justify-center">
       
-      <!-- Slide Track Holding All 12 Pictures strictly ordered -->
-      <div id="cardDeck" class="relative w-full h-full max-w-4xl flex items-center justify-center">
-        <!-- 12 Slides injected dynamically -->
+      <!-- Adaptive Scalable Card Container -->
+      <div id="cardDeck" class="card-box flex items-center justify-center">
+        <!-- 13 slides injected dynamically -->
       </div>
 
-      <!-- Minimal Left Arrow -->
-      <button id="prevArrow" aria-label="Previous image" class="nav-arrow absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full flex items-center justify-center text-gray-800 z-40 cursor-pointer">
-        <svg class="w-5 h-5 sm:w-6 sm:h-6 -translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <!-- Minimal Left Arrow (touch target >= 44px) -->
+      <button id="prevArrow" aria-label="Previous image" class="nav-arrow absolute left-1 sm:left-4 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-gray-800 z-40 cursor-pointer">
+        <svg class="w-5 h-5 -translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7" />
         </svg>
       </button>
 
-      <!-- Minimal Right Arrow -->
-      <button id="nextArrow" aria-label="Next image" class="nav-arrow absolute right-2 sm:right-4 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-13 sm:h-13 rounded-full flex items-center justify-center text-gray-800 z-40 cursor-pointer">
-        <svg class="w-5 h-5 sm:w-6 sm:h-6 translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+      <!-- Minimal Right Arrow (touch target >= 44px) -->
+      <button id="nextArrow" aria-label="Next image" class="nav-arrow absolute right-1 sm:right-4 top-1/2 -translate-y-1/2 w-11 h-11 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-gray-800 z-40 cursor-pointer">
+        <svg class="w-5 h-5 translate-x-0.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7" />
         </svg>
       </button>
 
     </div>
-
   </main>
 
   <!-- Audio element referencing the user's attached song file -->
   <audio id="backgroundAudio" loop preload="auto">
-    <!-- Primary attached audio title -->
-    <source src="song.mp3" type="audio/mpeg">
-    <!-- Standard portable fallbacks -->
+    <source src="My Happy Marriage OP「Anata no Soba ni _ 貴方の側に。」Ru's Piano Cover【Sheet Music】 - Ru's Piano Ru味春捲.mp3" type="audio/mpeg">
     <source src="song.mp3" type="audio/mpeg">
     <source src="audio.mp3" type="audio/mpeg">
     <source src="music.mp3" type="audio/mpeg">
@@ -235,8 +265,7 @@
 
   <script>
     /*
-     * The 13 pictures strictly ordered by file name (0.jpg through 12.jpg).
-     * Total picture count updated to 13.
+     * 13 Pictures in strict sequence: 0.jpg through 12.jpg
      */
     const totalPictures = 13;
     const pictureFiles = Array.from({ length: totalPictures }, (_, i) => `${i}.jpg`);
@@ -246,7 +275,7 @@
     let isSoundMuted = false;
     let romanticPianoSynth = null;
 
-    // DOM references
+    // DOM Elements
     const cardDeck = document.getElementById('cardDeck');
     const storyBarsContainer = document.getElementById('storyBars');
     const prevArrow = document.getElementById('prevArrow');
@@ -258,15 +287,15 @@
     const backgroundAudio = document.getElementById('backgroundAudio');
 
     /*
-     * Generates a warm piano accompaniment of "Anata no Soba ni"
-     * so enchanting music plays even if local MP3 is blocked in browser iframe
+     * Romantic Piano Synthesizer Fallback:
+     * Generates soft acoustic piano tones for "Anata no Soba ni"
+     * if browser autoplay limits local files or network delays occur.
      */
     class AmbientPianoSynthesizer {
       constructor() {
         this.ctx = null;
         this.active = false;
         this.timer = null;
-        // Pentatonic, heart-warming melodic chords inspired by the theme
         this.progression = [
           [261.63, 329.63, 392.00, 523.25], // C Major
           [220.00, 261.63, 329.63, 440.00], // A minor
@@ -323,7 +352,6 @@
           this.playNote(note, now + index * 0.32, 3.8, 0.038);
         });
 
-        // Delicate top-register melody chime
         const chime = chord[chord.length - 1] * 1.5;
         this.playNote(chime, now + 1.4, 2.8, 0.022);
 
@@ -351,7 +379,7 @@
       }
     }
 
-    // Gentle pop sound for the double tap heart
+    // Melodic chime on double-tap heart
     function playHeartChime() {
       try {
         const AudioCtx = window.AudioContext || window.webkitAudioContext;
@@ -362,7 +390,7 @@
 
         osc.type = 'sine';
         osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
-        osc.frequency.exponentialRampToValueAtTime(880.00, ctx.currentTime + 0.1); // A5
+        osc.frequency.exponentialRampToValueAtTime(880.00, ctx.currentTime + 0.09); // A5
 
         gain.gain.setValueAtTime(0.08, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
@@ -373,7 +401,7 @@
         osc.start();
         osc.stop(ctx.currentTime + 0.17);
       } catch (err) {
-        // Safe silence if audio context is blocked
+        // Safe silence if context blocked
       }
     }
 
@@ -382,17 +410,17 @@
       storyBarsContainer.innerHTML = '';
 
       pictureFiles.forEach((fileName, index) => {
-        // 1. Progress Bar Segment
+        // 1. Progress Bar Indicator (13 items)
         const segment = document.createElement('div');
         segment.className = 'h-full flex-1 bg-black/10 rounded-full overflow-hidden cursor-pointer';
         segment.innerHTML = `<div id="fill-${index}" class="story-bar-fill h-full bg-[#852638] w-0 rounded-full"></div>`;
         segment.addEventListener('click', () => jumpToSlide(index));
         storyBarsContainer.appendChild(segment);
 
-        // 2. Slide Card
+        // 2. Responsive Slide Card
         const card = document.createElement('div');
         card.id = `slide-${index}`;
-        card.className = 'slide-card absolute inset-0 w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer select-none bg-white shadow-2xl border border-[#9CB7D4]/35 flex items-center justify-center p-1 sm:p-2';
+        card.className = 'slide-card absolute inset-0 w-full h-full rounded-2xl sm:rounded-3xl overflow-hidden cursor-pointer select-none bg-white shadow-2xl border border-[#9CB7D4]/35 flex items-center justify-center p-1 sm:p-2.5';
 
         const img = document.createElement('img');
         img.src = fileName;
@@ -400,91 +428,134 @@
         img.className = 'w-full h-full object-contain pointer-events-none rounded-xl sm:rounded-2xl transition-transform duration-500';
         img.loading = index < 3 ? 'eager' : 'lazy';
 
-        // Add soft fallback if an image isn't yet present
+        // Graceful fallback if asset path differs
         img.onerror = () => {
           img.src = `https://placehold.co/1200x800/F8F5EE/852638?text=${encodeURIComponent(fileName)}`;
         };
 
         card.appendChild(img);
         cardDeck.appendChild(card);
-
-        // Double-Tap and Double-Click Heart Pop Listener
-        bindDoubleTap(card);
       });
 
       renderSlidePositions();
+      setupGestures();
     }
 
-    function bindDoubleTap(element) {
-      let lastTap = 0;
-      let singleTapTimer = null;
+    /*
+     * Double-Tap & Swipe Gesture Detection
+     * - Immediate double-tap heart pop detection
+     * - Fluid swipe left/right navigation with velocity & threshold
+     */
+    function setupGestures() {
+      let lastTapTime = 0;
+      let lastTapPos = { x: 0, y: 0 };
+      let startX = 0;
+      let startY = 0;
+      let currentX = 0;
+      let isSwiping = false;
 
-      element.addEventListener('pointerup', (e) => {
-        const currentTime = new Date().getTime();
-        const tapDifference = currentTime - lastTap;
+      cardDeck.addEventListener('pointerdown', (e) => {
+        startX = e.clientX;
+        startY = e.clientY;
+        currentX = e.clientX;
+        isSwiping = true;
+      });
 
-        if (tapDifference < 320 && tapDifference > 0) {
-          clearTimeout(singleTapTimer);
-          createHeartBurst(e, element);
-          lastTap = 0;
-        } else {
-          lastTap = currentTime;
-          singleTapTimer = setTimeout(() => {
-            lastTap = 0;
-          }, 340);
+      window.addEventListener('pointermove', (e) => {
+        if (!isSwiping) return;
+        currentX = e.clientX;
+      });
+
+      window.addEventListener('pointerup', (e) => {
+        if (!isSwiping) return;
+        isSwiping = false;
+
+        const deltaX = currentX - startX;
+        const deltaY = e.clientY - startY;
+        const dist = Math.hypot(deltaX, deltaY);
+
+        // 1. Check Swipe
+        if (Math.abs(deltaX) > 42 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+          if (deltaX < 0) {
+            advanceNext();
+          } else {
+            advancePrev();
+          }
+          return;
+        }
+
+        // 2. Check Tap / Double-Tap
+        if (dist < 15) {
+          const now = Date.now();
+          const timeSince = now - lastTapTime;
+          const posDist = Math.hypot(e.clientX - lastTapPos.x, e.clientY - lastTapPos.y);
+
+          if (timeSince < 320 && posDist < 35) {
+            // Instant Double Tap Confirmed!
+            createHeartBurst(e.clientX, e.clientY);
+            lastTapTime = 0;
+          } else {
+            lastTapTime = now;
+            lastTapPos = { x: e.clientX, y: e.clientY };
+          }
         }
       });
     }
 
-    function createHeartBurst(event, container) {
-      const rect = container.getBoundingClientRect();
-      const x = event.clientX ? (event.clientX - rect.left) : (rect.width / 2);
-      const y = event.clientY ? (event.clientY - rect.top) : (rect.height / 2);
+    function createHeartBurst(clientX, clientY) {
+      const activeCard = document.getElementById(`slide-${activeIndex}`);
+      if (!activeCard) return;
+
+      const rect = activeCard.getBoundingClientRect();
+      const x = clientX ? (clientX - rect.left) : (rect.width / 2);
+      const y = clientY ? (clientY - rect.top) : (rect.height / 2);
 
       playHeartChime();
 
-      // Primary popping heart
+      // Main Burst Heart
       const mainHeart = document.createElement('div');
       mainHeart.className = 'heart-burst text-rose-500';
       mainHeart.style.left = `${x}px`;
       mainHeart.style.top = `${y}px`;
       mainHeart.innerHTML = `
-        <svg class="w-24 h-24 sm:w-32 sm:h-32 fill-current drop-shadow-xl" viewBox="0 0 24 24">
+        <svg class="w-24 h-24 sm:w-32 sm:h-32 fill-current drop-shadow-2xl" viewBox="0 0 24 24">
           <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
         </svg>
       `;
-      container.appendChild(mainHeart);
+      activeCard.appendChild(mainHeart);
 
-      // Mini floating radiating sparkles
-      const heartColors = ['#E26D82', '#852638', '#F43F5E', '#FDA4AF', '#FB7185'];
+      // Mini Radiating Sparkle Hearts
+      const colors = ['#E26D82', '#852638', '#F43F5E', '#FDA4AF', '#FB7185'];
       for (let i = 0; i < 8; i++) {
         const mini = document.createElement('div');
         mini.className = 'mini-heart';
         const angle = (Math.PI * 2 / 8) * i + (Math.random() * 0.3 - 0.15);
-        const distance = 50 + Math.random() * 55;
+        const distance = 48 + Math.random() * 55;
         const tx = Math.cos(angle) * distance;
-        const ty = Math.sin(angle) * distance - 25;
+        const ty = Math.sin(angle) * distance - 20;
 
         mini.style.setProperty('--tx', `${tx}px`);
         mini.style.setProperty('--ty', `${ty}px`);
         mini.style.left = `${x}px`;
         mini.style.top = `${y}px`;
 
-        const color = heartColors[i % heartColors.length];
+        const color = colors[i % colors.length];
         mini.innerHTML = `
           <svg class="w-5 h-5 sm:w-6 sm:h-6" style="fill: ${color}" viewBox="0 0 24 24">
             <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
           </svg>
         `;
-        container.appendChild(mini);
+        activeCard.appendChild(mini);
 
-        setTimeout(() => mini.remove(), 750);
+        setTimeout(() => mini.remove(), 700);
       }
 
-      setTimeout(() => mainHeart.remove(), 920);
+      setTimeout(() => mainHeart.remove(), 850);
     }
 
     function renderSlidePositions() {
+      const isMobile = window.innerWidth < 640;
+      
       pictureFiles.forEach((_, idx) => {
         const slide = document.getElementById(`slide-${idx}`);
         const fillBar = document.getElementById(`fill-${idx}`);
@@ -499,46 +570,44 @@
           slide.style.opacity = '1';
           slide.style.zIndex = '30';
           slide.style.pointerEvents = 'auto';
-          slide.style.filter = 'drop-shadow(0 25px 35px rgba(100, 116, 139, 0.22))';
+          slide.style.filter = 'drop-shadow(0 20px 30px rgba(100, 116, 139, 0.22))';
         } else if (distance === -1 || (distance === totalPictures - 1 && activeIndex === 0)) {
           // Previous Card Peeking Left
-          slide.style.transform = 'translateX(-62%) scale(0.86) rotateY(16deg) translateZ(-80px)';
-          slide.style.opacity = '0.35';
+          const transX = isMobile ? '-96%' : '-58%';
+          slide.style.transform = `translateX(${transX}) scale(0.88) rotateY(12deg) translateZ(-60px)`;
+          slide.style.opacity = isMobile ? '0.2' : '0.4';
           slide.style.zIndex = '20';
           slide.style.pointerEvents = 'none';
           slide.style.filter = 'blur(1px)';
         } else if (distance === 1 || (distance === -(totalPictures - 1) && activeIndex === totalPictures - 1)) {
           // Next Card Peeking Right
-          slide.style.transform = 'translateX(62%) scale(0.86) rotateY(-16deg) translateZ(-80px)';
-          slide.style.opacity = '0.35';
+          const transX = isMobile ? '96%' : '58%';
+          slide.style.transform = `translateX(${transX}) scale(0.88) rotateY(-12deg) translateZ(-60px)`;
+          slide.style.opacity = isMobile ? '0.2' : '0.4';
           slide.style.zIndex = '20';
           slide.style.pointerEvents = 'none';
           slide.style.filter = 'blur(1px)';
         } else {
           // Offscreen
-          const direction = distance > 0 ? 110 : -110;
-          slide.style.transform = `translateX(${direction}%) scale(0.7) translateZ(-200px)`;
+          const direction = distance > 0 ? 115 : -115;
+          slide.style.transform = `translateX(${direction}%) scale(0.7) translateZ(-180px)`;
           slide.style.opacity = '0';
           slide.style.zIndex = '10';
           slide.style.pointerEvents = 'none';
         }
 
-        // Update Minimal Story Bar
+        // Top Progress Fill Bar
         if (fillBar) {
-          if (idx <= activeIndex) {
-            fillBar.style.width = '100%';
-          } else {
-            fillBar.style.width = '0%';
-          }
+          fillBar.style.width = idx <= activeIndex ? '100%' : '0%';
         }
       });
 
-      // Celebration specifically on the 8th picture (8.jpg: "We're getting married")
+      // Confetti trigger specifically on 8.jpg ("We're getting married." slide)
       if (pictureFiles[activeIndex] === '8.jpg') {
         if (typeof confetti === 'function') {
           confetti({
-            particleCount: 110,
-            spread: 80,
+            particleCount: 120,
+            spread: 85,
             origin: { y: 0.6 },
             colors: ['#852638', '#E26D82', '#9CB7D4', '#FCD34D', '#F472B6']
           });
@@ -547,20 +616,12 @@
     }
 
     function advanceNext() {
-      if (activeIndex < totalPictures - 1) {
-        activeIndex++;
-      } else {
-        activeIndex = 0; // Loop smoothly
-      }
+      activeIndex = (activeIndex < totalPictures - 1) ? activeIndex + 1 : 0;
       renderSlidePositions();
     }
 
     function advancePrev() {
-      if (activeIndex > 0) {
-        activeIndex--;
-      } else {
-        activeIndex = totalPictures - 1;
-      }
+      activeIndex = (activeIndex > 0) ? activeIndex - 1 : totalPictures - 1;
       renderSlidePositions();
     }
 
@@ -571,7 +632,7 @@
       }
     }
 
-    // Navigation buttons
+    // Button interactions
     nextArrow.addEventListener('click', (e) => {
       e.stopPropagation();
       advanceNext();
@@ -581,7 +642,7 @@
       advancePrev();
     });
 
-    // Keyboard arrow controls
+    // Keyboard bindings for PC browsers
     window.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === ' ') {
         advanceNext();
@@ -592,34 +653,10 @@
       }
     });
 
-    let startX = 0;
-    let startY = 0;
-    let endX = 0;
-    let endY = 0;
-
-    cardDeck.addEventListener('touchstart', (e) => {
-      startX = e.changedTouches[0].screenX;
-      startY = e.changedTouches[0].screenY;
-    }, { passive: true });
-
-    cardDeck.addEventListener('touchend', (e) => {
-      endX = e.changedTouches[0].screenX;
-      endY = e.changedTouches[0].screenY;
-      handleSwipe();
-    }, { passive: true });
-
-    function handleSwipe() {
-      const diffX = endX - startX;
-      const diffY = endY - startY;
-
-      if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 40) {
-        if (diffX < 0) {
-          advanceNext();
-        } else {
-          advancePrev();
-        }
-      }
-    }
+    // Re-render positions on screen resize / orientation change
+    window.addEventListener('resize', () => {
+      renderSlidePositions();
+    });
 
     function startMusic() {
       if (audioInitiated) return;
@@ -632,8 +669,8 @@
         playPromise.then(() => {
           updateMuteButtonVisuals(true);
         }).catch(() => {
-          // If browser restricts local audio playback or file not yet served,
-          // seamlessly play the romantic piano ambient synth!
+          // If browser restricts local audio playback or file not found,
+          // play the procedural romantic piano synth immediately
           if (!romanticPianoSynth) {
             romanticPianoSynth = new AmbientPianoSynthesizer();
           }
@@ -675,13 +712,13 @@
       toggleMute();
     });
 
-    // Start audio on first user tap/click anywhere (browser autoplay compliant)
+    // Start background music on first tap anywhere
     document.addEventListener('pointerdown', function firstTouchUnlock() {
       startMusic();
       document.removeEventListener('pointerdown', firstTouchUnlock);
     }, { once: true });
 
-    // Initialize carousel on load
+    // Initialize carousel on window load
     window.addEventListener('load', () => {
       initCarousel();
     });
