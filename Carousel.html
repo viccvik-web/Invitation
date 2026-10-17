@@ -7,7 +7,7 @@
 
   <!-- 
     CRITICAL HD PRELOAD: Eagerly pre-cache all 13 announcement images (0.jpg - 12.jpg)
-    Ensures immediate synchronous decoding and zero blurry frames across all devices
+    Ensures zero progressive decoding delay or blurred partial frames across all browsers
   -->
   <link rel="preload" as="image" href="0.jpg">
   <link rel="preload" as="image" href="1.jpg">
@@ -65,7 +65,7 @@
       background-color: var(--bg-cream);
     }
 
-    /* Textured luxury background */
+    /* Ambient luxury textured background */
     .ambient-bg {
       background-color: #FAF6EE;
       background-image: 
@@ -75,7 +75,10 @@
       background-size: 100% 100%, 100% 100%, 24px 24px;
     }
 
-    /* Pure Flexbox centering without fractional coordinate blur */
+    /*
+      FIX 5: ZERO SUBPIXEL OFFSETS
+      Pure Flexbox centering. No 'top: 50%; left: 50%; transform: translate(-50%, -50%)'
+    */
     .viewport-center {
       display: flex;
       align-items: center;
@@ -85,13 +88,13 @@
     }
 
     /*
-      STRICT 16:10 SIZING & NO CLIPPING MASK DOWNSAMPLING:
-      Container has no overflow:hidden or border-radius to prevent low-res mask rasterization.
-      Max dimensions locked to native 1000px × 625px.
+      FIX 2 & 3: NO CLIPPING BUFFER BLUR & STRICT 16:10 SIZING LIMITS
+      - Never use 'overflow: hidden' with 'border-radius' on the container (which forces low-res mask rasterization).
+      - Strict max-width 1000px and max-height 625px (native asset dimensions).
     */
     .card-deck {
       position: relative;
-      width: min(94vw, calc((100dvh - 84px) * 1.6), 1000px);
+      width: min(94vw, calc((100dvh - 80px) * 1.6), 1000px);
       aspect-ratio: 16 / 10;
       max-width: 1000px;
       max-height: 625px;
@@ -100,15 +103,19 @@
       justify-content: center;
     }
 
-    @media (max-height: 540px) {
+    @media (max-height: 520px) {
       .card-deck {
-        width: min(92vw, calc((100dvh - 46px) * 1.6), 1000px);
+        width: min(92vw, calc((100dvh - 44px) * 1.6), 1000px);
         aspect-ratio: 16 / 10;
-        max-height: calc(100dvh - 46px);
+        max-height: calc(100dvh - 44px);
       }
     }
 
-    /* Slide Deck: Active card is rendered directly without GPU 3D texture downsampling */
+    /*
+      FIX 1: ZERO GPU TEXTURE DOWNSAMPLING
+      Transitioning slides move smoothly, but active settled slide has 'transform: none !important;'
+      and 'will-change: auto !important;', forcing the browser to render <img> directly to the viewport buffer.
+    */
     .slide-card {
       position: absolute;
       top: 0;
@@ -121,7 +128,7 @@
       opacity: 0;
       visibility: hidden;
       pointer-events: none;
-      transition: transform 0.45s cubic-bezier(0.18, 0.9, 0.28, 1), opacity 0.38s ease, visibility 0.38s;
+      transition: transform 0.45s cubic-bezier(0.18, 0.9, 0.28, 1), opacity 0.4s ease, visibility 0.4s;
     }
 
     .slide-card.is-active {
@@ -134,20 +141,24 @@
     }
 
     .slide-card.is-prev {
-      transform: translateX(-103%) scale(0.96);
+      transform: translateX(-104%) scale(0.96);
       opacity: 0;
       visibility: hidden;
       z-index: 10;
     }
 
     .slide-card.is-next {
-      transform: translateX(103%) scale(0.96);
+      transform: translateX(104%) scale(0.96);
       opacity: 0;
       visibility: hidden;
       z-index: 10;
     }
 
-    /* Native border radius on the <img> directly prevents clipping blur */
+    /*
+      FIX 2 & 4: PRISTINE IMAGE STYLING & DIRECT BORDER RADIUS
+      - 'border-radius: 12px' directly on the <img> eliminates clipping artifacts.
+      - 'image-rendering: auto;' ensures clean bicubic resampling on all screen scales.
+    */
     .story-image {
       width: 100%;
       height: 100%;
@@ -155,8 +166,8 @@
       max-height: 625px;
       aspect-ratio: 16 / 10;
       object-fit: contain;
-      border-radius: 14px;
-      box-shadow: 0 16px 40px -8px rgba(100, 116, 139, 0.2), 0 0 0 1px rgba(156, 183, 212, 0.35);
+      border-radius: 12px;
+      box-shadow: 0 16px 40px -8px rgba(100, 116, 139, 0.22), 0 0 0 1px rgba(156, 183, 212, 0.35);
       background-color: #FAF6EE;
       image-rendering: auto;
       user-select: none;
@@ -164,7 +175,7 @@
       display: block;
     }
 
-    /* Double-Tap Heart Burst Animation */
+    /* Heart Pop Animation */
     @keyframes heartPop {
       0% {
         transform: translate(-50%, -50%) scale(0) rotate(-10deg);
@@ -210,7 +221,7 @@
       z-index: 79;
     }
 
-    /* Minimalist Glass Mute Button */
+    /* Glass Mute Button */
     .glass-mute-btn {
       background: rgba(255, 255, 255, 0.88);
       backdrop-filter: blur(14px);
@@ -228,7 +239,7 @@
       transform: scale(0.93);
     }
 
-    /* Soundwave Equalizer Bars */
+    /* Soundwave bars */
     @keyframes wavePulse {
       0%, 100% { height: 3.5px; }
       50% { height: 14.5px; }
@@ -250,13 +261,13 @@
 
     /* Navigation Arrows */
     .nav-arrow {
-      background: rgba(255, 255, 255, 0.84);
+      background: rgba(255, 255, 255, 0.82);
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.9);
       box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.08);
       transition: all 0.22s ease;
-      opacity: 0.6;
+      opacity: 0.55;
     }
     .nav-arrow:hover {
       opacity: 1;
@@ -329,12 +340,13 @@
     </div>
   </main>
 
-  <!-- Audio Element with Endless Loop and Multiple Fallback Sources -->
-  <audio id="backgroundAudio" loop autoplay playsinline preload="auto">
+  <!-- Audio element referencing user's attached song file -->
+  <audio id="backgroundAudio" autoplay loop preload="auto" playsinline webkit-playsinline>
     <source src="song-01.mp3" type="audio/mpeg">
-    <!-- <source src="song.mp3" type="audio/mpeg">
+   <!-- <source src="song.mp3" type="audio/mpeg">
     <source src="audio.mp3" type="audio/mpeg">
-    <source src="music.mp3" type="audio/mpeg"> -->
+    <source src="music.mp3" type="audio/mpeg">
+    -->
   </audio>
 
   <script>
@@ -345,7 +357,7 @@
     const pictureFiles = Array.from({ length: totalPictures }, (_, i) => `${i}.jpg`);
 
     let activeIndex = 0;
-    let audioPlaybackActive = false;
+    let audioInitiated = false;
     let isSoundMuted = false;
     let romanticPianoSynth = null;
 
@@ -361,9 +373,9 @@
     const backgroundAudio = document.getElementById('backgroundAudio');
 
     /*
-     * Endless Looping Ambient Piano Synthesizer Fallback:
-     * Generates rich acoustic piano chords for "Anata no Soba ni"
-     * if audio file network load fails or media element is restricted.
+     * Ambient Piano Synthesizer Fallback:
+     * Generates soft acoustic piano tones for "Anata no Soba ni"
+     * if browser autoplay limits local files or network delays occur.
      */
     class AmbientPianoSynthesizer {
       constructor() {
@@ -429,7 +441,6 @@
         const chime = chord[chord.length - 1] * 1.5;
         this.playNote(chime, now + 1.4, 2.8, 0.022);
 
-        // Endless loop recursion
         this.timer = setTimeout(() => this.playSequence(), 3500);
       }
 
@@ -464,8 +475,8 @@
         const gain = ctx.createGain();
 
         osc.type = 'sine';
-        osc.frequency.setValueAtTime(587.33, ctx.currentTime);
-        osc.frequency.exponentialRampToValueAtTime(880.00, ctx.currentTime + 0.09);
+        osc.frequency.setValueAtTime(587.33, ctx.currentTime); // D5
+        osc.frequency.exponentialRampToValueAtTime(880.00, ctx.currentTime + 0.09); // A5
 
         gain.gain.setValueAtTime(0.08, ctx.currentTime);
         gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
@@ -477,98 +488,6 @@
         osc.stop(ctx.currentTime + 0.17);
       } catch (err) {
         // Safe silence if context blocked
-      }
-    }
-
-    /*
-     * IMMEDIATE AUTOPLAY & ENDLESS LOOP ENGINE
-     * 1. Attempts direct playback immediately on page open.
-     * 2. Sets endless loop handlers for both audio element and synth fallback.
-     * 3. Sets window-level capture phase listeners so ANY first touch/click/scroll
-     *    instantly starts playback if browser autoplay policy initially withheld audio.
-     */
-    function startMusic() {
-      if (audioPlaybackActive && !isSoundMuted) return;
-
-      backgroundAudio.volume = 0.55;
-      backgroundAudio.loop = true;
-
-      // Endless loop safeguard for all mobile browser quirks
-      backgroundAudio.onended = function() {
-        backgroundAudio.currentTime = 0;
-        backgroundAudio.play().catch(() => {});
-      };
-
-      const playPromise = backgroundAudio.play();
-
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          audioPlaybackActive = true;
-          updateMuteButtonVisuals(true);
-          detachGlobalAutoplayTriggers();
-        }).catch((err) => {
-          // Fallback to procedural acoustic piano synthesizer
-          if (!romanticPianoSynth) {
-            romanticPianoSynth = new AmbientPianoSynthesizer();
-          }
-          romanticPianoSynth.start();
-          audioPlaybackActive = true;
-          updateMuteButtonVisuals(true);
-        });
-      }
-    }
-
-    // Global listener handler to start audio on ANY initial gesture
-    function globalUnlockTrigger() {
-      startMusic();
-    }
-
-    function attachGlobalAutoplayTriggers() {
-      const opts = { capture: true, passive: true };
-      window.addEventListener('pointerdown', globalUnlockTrigger, opts);
-      window.addEventListener('touchstart', globalUnlockTrigger, opts);
-      window.addEventListener('touchend', globalUnlockTrigger, opts);
-      window.addEventListener('click', globalUnlockTrigger, opts);
-      window.addEventListener('keydown', globalUnlockTrigger, opts);
-      window.addEventListener('wheel', globalUnlockTrigger, opts);
-    }
-
-    function detachGlobalAutoplayTriggers() {
-      const opts = { capture: true, passive: true };
-      window.removeEventListener('pointerdown', globalUnlockTrigger, opts);
-      window.removeEventListener('touchstart', globalUnlockTrigger, opts);
-      window.removeEventListener('touchend', globalUnlockTrigger, opts);
-      window.removeEventListener('click', globalUnlockTrigger, opts);
-      window.removeEventListener('keydown', globalUnlockTrigger, opts);
-      window.removeEventListener('wheel', globalUnlockTrigger, opts);
-    }
-
-    function toggleMute() {
-      if (!audioPlaybackActive) {
-        startMusic();
-      }
-
-      isSoundMuted = !isSoundMuted;
-      backgroundAudio.muted = isSoundMuted;
-
-      if (romanticPianoSynth) {
-        romanticPianoSynth.setMute(isSoundMuted);
-      }
-
-      updateMuteButtonVisuals(!isSoundMuted);
-    }
-
-    function updateMuteButtonVisuals(isPlaying) {
-      if (isPlaying && !isSoundMuted) {
-        waveContainer.classList.remove('is-muted');
-        waveContainer.classList.remove('hidden');
-        muteCrossIcon.classList.add('hidden');
-        muteLabelText.textContent = 'Mute';
-      } else {
-        waveContainer.classList.add('is-muted');
-        waveContainer.classList.add('hidden');
-        muteCrossIcon.classList.remove('hidden');
-        muteLabelText.textContent = 'Unmute';
       }
     }
 
@@ -585,7 +504,8 @@
         const segment = document.createElement('div');
         segment.className = 'h-full flex-1 bg-black/10 rounded-full overflow-hidden cursor-pointer';
         segment.innerHTML = `<div id="fill-${index}" class="story-bar-fill h-full bg-[#852638] w-0 rounded-full"></div>`;
-        segment.addEventListener('click', () => {
+        segment.addEventListener('click', (e) => {
+          e.stopPropagation();
           jumpToSlide(index);
         });
         storyBarsContainer.appendChild(segment);
@@ -618,6 +538,8 @@
 
     /*
      * DOUBLE-TAP & SWIPE GESTURE DETECTION
+     * - Immediate double-tap / double-click heart pop
+     * - Fluid swipe left/right navigation
      */
     function setupGestures() {
       let lastTapTime = 0;
@@ -657,7 +579,7 @@
           return;
         }
 
-        // 2. Double-Tap Detection (< 320ms)
+        // 2. Double-Tap Detection (< 320ms and minimal movement)
         if (dist < 18) {
           const now = Date.now();
           const timeSince = now - lastTapTime;
@@ -756,7 +678,7 @@
         }
       });
 
-      // Confetti burst specifically on 8.jpg ("We're getting married.")
+      // Confetti trigger specifically on 8.jpg ("We're getting married.")
       if (activeIndex === 8 && typeof confetti === 'function') {
         confetti({
           particleCount: 110,
@@ -803,10 +725,16 @@
     }
 
     // Button interactions
-    nextArrow.addEventListener('click', advanceNext);
-    prevArrow.addEventListener('click', advancePrev);
+    nextArrow.addEventListener('click', (e) => {
+      e.stopPropagation();
+      advanceNext();
+    });
+    prevArrow.addEventListener('click', (e) => {
+      e.stopPropagation();
+      advancePrev();
+    });
 
-    // Keyboard navigation
+    // Keyboard bindings for PC browsers
     window.addEventListener('keydown', (e) => {
       if (e.key === 'ArrowRight' || e.key === ' ') {
         advanceNext();
@@ -817,35 +745,138 @@
       }
     });
 
-    muteToggleBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      toggleMute();
-    });
-
+    // Re-evaluate on orientation / screen resize
     window.addEventListener('resize', () => {
       renderSlidePositions();
     });
 
     /*
-     * LIFECYCLE & IMMEDIATE PLAYBACK DISPATCH:
-     * Attempts playback immediately upon DOM ready and on window load.
-     * Keeps universal capture-phase listeners attached to start playback on the very first touch anywhere.
+     * Audio Controls
      */
-    attachGlobalAutoplayTriggers();
+    function startMusic() {
+      if (isSoundMuted) return;
 
-    document.addEventListener('DOMContentLoaded', () => {
-      initCarousel();
+      backgroundAudio.volume = 0.55;
+      const playPromise = backgroundAudio.play();
+
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          audioInitiated = true;
+          updateMuteButtonVisuals(true);
+        }).catch(() => {
+          // If browser policy blocked playback on cold start or file failed
+          if (audioInitiated && !romanticPianoSynth && !isSoundMuted) {
+            romanticPianoSynth = new AmbientPianoSynthesizer();
+            romanticPianoSynth.start();
+            updateMuteButtonVisuals(true);
+          }
+        });
+      }
+    }
+
+    function attemptAutoPlay() {
+      if (isSoundMuted) return;
       startMusic();
+    }
+
+    function toggleMute() {
+      audioInitiated = true;
+      isSoundMuted = !isSoundMuted;
+
+      backgroundAudio.muted = isSoundMuted;
+
+      if (isSoundMuted) {
+        backgroundAudio.pause();
+        if (romanticPianoSynth) {
+          romanticPianoSynth.setMute(true);
+        }
+        updateMuteButtonVisuals(false);
+      } else {
+        const playPromise = backgroundAudio.play();
+        if (playPromise !== undefined) {
+          playPromise.then(() => {
+            updateMuteButtonVisuals(true);
+          }).catch(() => {
+            if (!romanticPianoSynth) {
+              romanticPianoSynth = new AmbientPianoSynthesizer();
+            }
+            romanticPianoSynth.start();
+            updateMuteButtonVisuals(true);
+          });
+        }
+        if (romanticPianoSynth) {
+          romanticPianoSynth.setMute(false);
+        }
+        updateMuteButtonVisuals(true);
+      }
+    }
+
+    function updateMuteButtonVisuals(isPlaying) {
+      if (isPlaying && !isSoundMuted) {
+        waveContainer.classList.remove('is-muted');
+        waveContainer.classList.remove('hidden');
+        muteCrossIcon.classList.add('hidden');
+        muteLabelText.textContent = 'Mute';
+      } else {
+        waveContainer.classList.add('is-muted');
+        waveContainer.classList.add('hidden');
+        muteCrossIcon.classList.remove('hidden');
+        muteLabelText.textContent = 'Unmute';
+      }
+    }
+
+    muteToggleBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      toggleMute();
     });
 
+    // Multi-stage Autoplay Triggering:
+    // 1. Immediate execution attempt
+    attemptAutoPlay();
+
+    // 2. DOMContentLoaded attempt
+    document.addEventListener('DOMContentLoaded', attemptAutoPlay);
+
+    // 3. Audio ready events
+    backgroundAudio.addEventListener('canplay', attemptAutoPlay, { once: true });
+    backgroundAudio.addEventListener('canplaythrough', attemptAutoPlay, { once: true });
+
+    // 4. Capture-phase unlock listeners on any early user gesture if blocked by browser policy
+    const unlockEvents = ['pointerdown', 'touchstart', 'touchend', 'mousedown', 'click', 'keydown', 'wheel'];
+    function unlockAudioHandler() {
+      audioInitiated = true;
+      if (!isSoundMuted) {
+        const promise = backgroundAudio.play();
+        if (promise !== undefined) {
+          promise.then(() => {
+            updateMuteButtonVisuals(true);
+          }).catch(() => {
+            if (!romanticPianoSynth && !isSoundMuted) {
+              romanticPianoSynth = new AmbientPianoSynthesizer();
+              romanticPianoSynth.start();
+              updateMuteButtonVisuals(true);
+            }
+          });
+        }
+      }
+      unlockEvents.forEach(evt => window.removeEventListener(evt, unlockAudioHandler, { capture: true }));
+    }
+    unlockEvents.forEach(evt => window.addEventListener(evt, unlockAudioHandler, { capture: true, passive: true }));
+
+    // Fallback if audio file cannot be loaded
+    backgroundAudio.addEventListener('error', () => {
+      if (audioInitiated && !isSoundMuted && !romanticPianoSynth) {
+        romanticPianoSynth = new AmbientPianoSynthesizer();
+        romanticPianoSynth.start();
+        updateMuteButtonVisuals(true);
+      }
+    });
+
+    // Initialize carousel on load and re-attempt playback
     window.addEventListener('load', () => {
-      startMusic();
+      initCarousel();
+      attemptAutoPlay();
     });
-
-    // Immediate script execution attempt
-    try {
-      startMusic();
-    } catch (e) {}
   </script>
 </body>
 </html>
